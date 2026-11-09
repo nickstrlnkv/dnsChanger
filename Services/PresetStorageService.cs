@@ -89,27 +89,6 @@ namespace DnsChanger.Services
             {
                 new()
                 {
-                    Id = "bezmezhau",
-                    Name = "Bezmezhau DNS",
-                    Description = "Прямой доступ и обход ограничений (bezmezhau.com)",
-                    IPv4Primary = "143.20.64.55",
-                    IPv4Secondary = "31.58.216.201",
-                    DoHTemplate = "https://dns.bezmezhau.com/dns-query",
-                    DoTHost = "dns.bezmezhau.com:853",
-                    IsBuiltIn = true
-                },
-                new()
-                {
-                    Id = "magicdns",
-                    Name = "MagicDNS",
-                    Description = "Доступ к нейросетям и сервисам через DoH (magicdns.ru)",
-                    IPv4Primary = "109.120.177.170",
-                    IPv4Secondary = "45.88.163.92",
-                    DoHTemplate = "https://api.magicdns.ru/sync",
-                    IsBuiltIn = true
-                },
-                new()
-                {
                     Id = "cloudflare",
                     Name = "Cloudflare DNS",
                     Description = "Самый быстрый и приватный. Без цензуры.",
