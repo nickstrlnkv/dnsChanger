@@ -6,6 +6,10 @@
 ![.NET 10](https://img.shields.io/badge/.NET-10.0-purple?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
+<p align="center">
+  <img src="images/main.png" alt="Интерфейс DNS Changer" width="900" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
+</p>
+
 ---
 
 ## 🚀 Основные возможности
