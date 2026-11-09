@@ -95,9 +95,15 @@
                            FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" Margin="0,0,12,6"/>
 
                 <ComboBox Grid.Row="0" Grid.Column="1" x:Name="CmbAdapters"
-                          DisplayMemberPath="DisplayName"
                           SelectionChanged="CmbAdapters_SelectionChanged"
-                          Margin="0,0,12,6" Height="34"/>
+                          Margin="0,0,12,6" Height="36">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" FontSize="13" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource OutlineButton}" 
                         Content="🔄 Обновить" Click="RefreshAdapters_Click" Height="34" Margin="0,0,0,6"/>
