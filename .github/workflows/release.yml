@@ -1,0 +1,96 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Название релиза / тега (например, v1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore DnsChanger.csproj
+
+      - name: Build Standalone Version (Self-Contained)
+        run: |
+          dotnet publish DnsChanger.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish-standalone
+          Copy-Item -Path ./publish-standalone/DnsChanger.exe -Destination ./DnsChanger-Standalone.exe
+          Compress-Archive -Path ./publish-standalone/* -DestinationPath ./DnsChanger-win-x64-standalone.zip -Force
+
+      - name: Build Portable Version (Framework-Dependent)
+        run: |
+          dotnet publish DnsChanger.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish-portable
+          Compress-Archive -Path ./publish-portable/* -DestinationPath ./DnsChanger-win-x64-portable.zip -Force
+
+      - name: Determine Release Tag
+        id: release_tag
+        shell: pwsh
+        run: |
+          $inputTag = "${{ inputs.tag_name }}"
+          if ($inputTag -ne "") {
+            $tag = $inputTag
+          } elseif ($env:GITHUB_REF -like "refs/tags/*") {
+            $tag = $env:GITHUB_REF.Substring(10)
+          } else {
+            $tag = "v1.0.${{ github.run_number }}"
+          }
+          Write-Output "TAG=$tag" >> $env:GITHUB_OUTPUT
+          Write-Output "Release tag is: $tag"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.TAG }}
+          name: DNS Changer ${{ steps.release_tag.outputs.TAG }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## ⚡ Релиз DNS Changer для Windows 11 / 10
+
+            Удобная графическая утилита для быстрого переключения DNS-серверов в один клик.
+
+            ### 📦 Файлы для загрузки:
+            * **`DnsChanger-Standalone.exe`** или **`DnsChanger-win-x64-standalone.zip`** ⭐ *(Рекомендуется)*  
+              Полностью автономная версия. **Работает на любом компьютере с Windows 10/11 без необходимости устанавливать .NET**.
+            * **`DnsChanger-win-x64-portable.zip`**  
+              Компактная версия (~250 КБ) для систем, где уже установлен .NET 10 Desktop Runtime.
+
+            ---
+
+            ### 🚀 Основные возможности:
+            * ⚡ Смена DNS в один клик без перехода в системные параметры Windows.
+            * 🌐 Популярные пресеты: Cloudflare (1.1.1.1), Google (8.8.8.8), AdGuard (блокировка рекламы), Quad9 (безопасность), OpenDNS, Яндекс, Control D.
+            * 🔒 Поддержка безопасного шифрования **DoH (DNS over HTTPS)** и **DoT (DNS over TLS)**.
+            * ➕ Добавление собственных пресетов (MagicDNS, Bezmezhau и любые другие) через интерфейс или `presets.json`.
+            * 📊 Встроенное измерение пинга до всех серверов для выбора самого быстрого.
+            * 🔄 Возврат к настройкам по умолчанию (DHCP) в один клик.
+            * 🧹 Очистка системного кэша DNS (`Clear-DnsClientCache` и `ipconfig /flushdns`).
+          files: |
+            DnsChanger-Standalone.exe
+            DnsChanger-win-x64-standalone.zip
+            DnsChanger-win-x64-portable.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
